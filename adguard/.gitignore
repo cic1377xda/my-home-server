@@ -5,6 +5,7 @@
 # 1. Environment Variables & Tokens
 .env
 token.txt
+renew-cert.sh
 
 # 2. AdGuard Privacy Data (DNS Logs, Sessions, Stats)
 # Do NOT upload this as it contains your entire network's browsing history
