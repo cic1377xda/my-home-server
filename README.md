@@ -14,8 +14,6 @@ Welcome to my personal homelab repository! This project showcases a comprehensiv
 
     Containerization: Docker Engine & Docker Compose
 
-    Datacenter Location: Masjid Tanah, Melaka 🇲🇾
-
     Reverse Proxy: Nginx Proxy Manager (NPM) + Cloudflare
 
     Network Security: UFW + CrowdSec (Hybrid IPS)
