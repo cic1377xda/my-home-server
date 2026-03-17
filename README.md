@@ -1,12 +1,11 @@
-# 🖥️ pwn20wnd's Homelab Architecture
+# 🖥️ cic1377xda's Homelab Architecture
 
 ```text
-    ____                  ___  ____                     __
-   / __ \_      ______   |__ \/ __ \_      ______  ____/ /
-  / /_/ / | /| / / __ \  __/ / / / / | /| / / __ \/ __  / 
- / ____/| |/ |/ / / / / / __/ /_/ /| |/ |/ / / / / /_/ /  
-/_/     |__/|__/_/ /_/ /____/\____/ |__/|__/_/ /_/\__,_/
-
+        _           __ _____   ____  ____             __        
+ _____ (_) _____  <  /|__  /  /_  / /_  / __  __ ____/ /  ____  
+/ ___/ / // ___/  / /  /_ <    / /   / /  \ \/ // __  /  / __ `/ 
+/ /__ / / / /__  / /  ___/ /  / /   / /    >  < / /_/ / / /_/ / 
+\___/ /_/ \___/ /_/   /____/ /_/   /_/    /_/\_\\__,_/  \__,_/
 
 Welcome to my personal homelab repository! This project showcases a comprehensive, self-hosted Docker architecture deployed on a Debian Linux laptop server. It is built with a strong emphasis on security, privacy, and automated media management.
 🏗️ Infrastructure Overview
