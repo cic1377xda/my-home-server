@@ -1,0 +1,52 @@
+# ==============================================================================
+# ADGUARD HOME - DOCKER COMPOSE CONFIGURATION
+# ==============================================================================
+# Description:
+#   A privacy-oriented DNS server and network-wide ad blocker.
+#   This container is attached to an external reverse-proxy network.
+#
+# Directory Architecture & Volume Mapping:
+#   ./conf/  : Stores the main configuration (AdGuardHome.yaml) and SSL 
+#              certificates (Let's Encrypt). This is excluded from Git to 
+#              protect private keys and hashed admin passwords.
+#   ./work/  : Stores dynamic data including DNS query logs (querylog.json), 
+#              user sessions (sessions.db), and traffic statistics. Excluded 
+#              from version control to maintain network privacy.
+#
+# Security Notice:
+#   Ensure .env, token.txt, and the data directories are listed in .gitignore 
+#   prior to pushing to any public repository.
+# ==============================================================================
+
+services:
+  adguardhome:
+    image: adguard/adguardhome:latest
+    container_name: adguardhome
+    restart: unless-stopped
+    environment:
+      # Pulls timezone from .env file for accurate query logging
+      - TZ=${TZ:-Asia/Kuala_Lumpur}
+    ports:
+      # Standard DNS ports (TCP/UDP)
+      - "53:53/tcp"
+      - "53:53/udp"
+      # Admin Web Interface
+      - "3000:3000/tcp"
+      # DNS-over-TLS (DoT) port
+      - "853:853/tcp"
+    volumes:
+      # Map configuration and operational data to host directories
+      - ./work:/opt/adguardhome/work
+      - ./conf:/opt/adguardhome/conf
+    networks:
+      # Attached to the external network to communicate with other services 
+      # (e.g., Nginx Proxy Manager / Cloudflare Tunnels)
+      - pwn20wnd-network
+      - default
+
+# ==============================================================================
+# NETWORK DEFINITIONS
+# ==============================================================================
+networks:
+  pwn20wnd-network:
+    external: true

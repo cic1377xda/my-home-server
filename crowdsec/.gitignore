@@ -1,0 +1,20 @@
+# ==========================================
+# GITHUB IGNORE LIST - SECURITY & PRIVACY
+# ==========================================
+
+# 1. Environment Variables & Secrets
+.env
+
+# 2. CrowdSec Configuration & Credentials
+# CRITICAL: Contains LAPI & Central API credentials
+config/local_api_credentials.yaml
+config/online_api_credentials.yaml
+
+# 3. CrowdSec Database & Volatile Data
+# Contains the SQLite database with all your ban records and alerts
+data/crowdsec.db
+data/
+
+# 4. Backups and Temporary Files
+*.bak
+*.tmp

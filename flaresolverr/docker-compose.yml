@@ -1,0 +1,40 @@
+# ==============================================================================
+# FLARESOLVERR - DOCKER COMPOSE CONFIGURATION
+# ==============================================================================
+# Description:
+#   A proxy server designed to bypass Cloudflare's anti-bot protections. 
+#   It acts as a headless browser that solves Cloudflare challenges seamlessly.
+#
+# Use Case in Homelab:
+#   Crucial for the *arr stack (specifically Prowlarr or Jackett). When indexers 
+#   are protected by Cloudflare, Prowlarr routes its requests through FlareSolverr 
+#   to retrieve the HTML/JSON data without being blocked as a malicious bot.
+#
+# Data Persistence:
+#   This container operates statelessly. It does not require any volume mounts 
+#   as it merely processes requests on the fly.
+# ==============================================================================
+
+services:
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=info
+      - LOG_HTML=false
+      - CAPTCHA_SOLVER=none
+      - TZ=${TZ:-Asia/Kuala_Lumpur}
+    ports:
+      - "${FLARESOLVERR_PORT:-8191}:8191"
+    restart: always
+    networks:
+      # Attached to the internal proxy network to serve Prowlarr directly
+      - pwn20wnd-network
+      - default
+
+# ==============================================================================
+# NETWORK DEFINITIONS
+# ==============================================================================
+networks:
+  pwn20wnd-network:
+    external: true

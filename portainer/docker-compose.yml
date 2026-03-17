@@ -1,0 +1,56 @@
+# ==============================================================================
+# PORTAINER CE - DOCKER COMPOSE CONFIGURATION
+# ==============================================================================
+# Description:
+#   A lightweight service delivery platform for containerized applications. 
+#   Acts as the central management UI for the entire Docker Engine environment.
+#
+# Directory Architecture & Volume Mapping:
+#   Unlike local bind mounts, this deployment uses a Docker Named Volume 
+#   (portainer_data) to securely store its internal database and admin 
+#   credentials deep within the Docker host system (/var/lib/docker/volumes/).
+#
+# Security Notice:
+#   /var/run/docker.sock is mounted to give Portainer full management access 
+#   to the Docker Engine. Due to this high-privilege requirement, ensure 
+#   Portainer is placed behind a secure reverse proxy (like Nginx Proxy Manager) 
+#   with strong authentication. The .env file must be listed in .gitignore.
+# ==============================================================================
+
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    # Uses variable from .env, falls back to 'portainer' if empty
+    container_name: ${PORTAINER_CONTAINER_NAME:-portainer}
+    restart: unless-stopped
+    security_opt:
+      # Hardening: Prevents the container from gaining new privileges
+      - no-new-privileges:true
+    environment:
+      - TZ=${TZ:-Asia/Kuala_Lumpur}
+    volumes:
+      # Syncs container time with the host system
+      - /etc/localtime:/etc/localtime:ro
+      # Grants Portainer control over the Docker daemon (Management rights)
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Persistent storage for Portainer configurations and users
+      - portainer_data:/data
+    ports:
+      - "${PORTAINER_PORT:-9000}:9000"
+    networks:
+      # Attached to the external network for reverse proxy routing
+      - pwn20wnd-network
+
+# ==============================================================================
+# NAMED VOLUMES
+# Managed entirely by Docker Engine to isolate sensitive admin data.
+# ==============================================================================
+volumes:
+  portainer_data:
+
+# ==============================================================================
+# NETWORK DEFINITIONS
+# ==============================================================================
+networks:
+  pwn20wnd-network:
+    external: true

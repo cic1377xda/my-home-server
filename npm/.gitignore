@@ -1,0 +1,18 @@
+# ==========================================
+# GITHUB IGNORE LIST - SECURITY & PRIVACY
+# ==========================================
+
+# 1. Environment Variables
+.env
+
+# 2. Nginx Proxy Manager Data & Configurations
+# CRITICAL: Contains SQLite databases, domains, and access/error logs
+data/
+
+# 3. SSL Certificates
+# CRITICAL: Contains highly sensitive Let's Encrypt Private Keys
+letsencrypt/
+
+# 4. Backups and Temporary Files
+*.bak
+*.tmp

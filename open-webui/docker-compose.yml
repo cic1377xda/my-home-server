@@ -1,0 +1,50 @@
+# ==============================================================================
+# OPEN WEBUI - DOCKER COMPOSE CONFIGURATION
+# ==============================================================================
+# Description:
+#   A user-friendly, feature-rich web interface for interacting with Large 
+#   Language Models (LLMs). This specific deployment utilizes OpenRouter as 
+#   the backend API, eliminating the need for heavy local inference hardware.
+#
+# Directory Architecture & Volume Mapping:
+#   ${OPEN_WEBUI_DIR} : Mapped to /app/backend/data inside the container. 
+#                       Stores persistent data including user profiles, chat 
+#                       histories, and system configurations.
+#
+# Security Notice:
+#   The .env file contains highly sensitive cryptographic keys (WebUI Secret) 
+#   and billing-tied API keys (OpenRouter). Ensure .env is explicitly listed 
+#   in your .gitignore prior to committing to any public repository.
+# ==============================================================================
+
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    restart: always
+    ports:
+      # Host Port : Container Port
+      - "${WEBUI_PORT:-3030}:8080"
+    volumes:
+      # Persistent storage mapping
+      - ${OPEN_WEBUI_DIR:-./data}:/app/backend/data
+    env_file:
+      # Loads sensitive API keys securely
+      - .env
+    environment:
+      - TZ=${TZ:-Asia/Kuala_Lumpur}
+      # Route all LLM requests through OpenRouter's unified API
+      - OPENAI_API_BASE_URL=https://openrouter.ai/api/v1
+      # Keys are automatically injected from the .env file
+      - OPENAI_API_KEY=${OPENROUTER_API_KEY}
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}
+    networks:
+      # Attached to the external network for reverse proxy routing
+      - pwn20wnd-network
+
+# ==============================================================================
+# NETWORK DEFINITIONS
+# ==============================================================================
+networks:
+  pwn20wnd-network:
+    external: true

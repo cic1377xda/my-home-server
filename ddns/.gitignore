@@ -1,0 +1,11 @@
+# ==========================================
+# GITHUB IGNORE LIST - SECURITY & PRIVACY
+# ==========================================
+
+# 1. Environment Variables & Secrets
+# CRITICAL: Contains Cloudflare Global/Zone API Tokens
+.env
+
+# 2. Backups and Temporary Files
+*.bak
+*.tmp

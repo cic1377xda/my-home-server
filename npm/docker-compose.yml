@@ -1,0 +1,51 @@
+# ==============================================================================
+# NGINX PROXY MANAGER (NPM) - DOCKER COMPOSE CONFIGURATION
+# ==============================================================================
+# Description:
+#   The primary Reverse Proxy and SSL Termination gateway for the entire homelab.
+#   It routes incoming internet traffic (ports 80 & 443) to specific internal 
+#   Docker containers based on subdomains (e.g., sonarr.example.com).
+#
+# Directory Architecture & Volume Mapping:
+#   ${NPM_DATA_DIR}        : Stores the SQLite database, custom Nginx configs, 
+#                            and critical access/error logs. (Used by CrowdSec).
+#   ${NPM_LETSENCRYPT_DIR} : Securely stores SSL/TLS certificates and private keys.
+#
+# Security Notice:
+#   Both the data and letsencrypt directories contain highly sensitive 
+#   information (Private Keys, User IPs, Passwords). Ensure they are strictly 
+#   ignored via .gitignore prior to committing to any public repository.
+# ==============================================================================
+
+services:
+  app:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: nginx-proxy-manager
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - TZ=${TZ:-Asia/Kuala_Lumpur}
+    ports:
+      # Primary HTTP Port (Required for initial Let's Encrypt validation)
+      - "${PORT_HTTP:-80}:80"
+      # NPM Admin Dashboard
+      - "${PORT_ADMIN:-81}:81"
+      # Primary HTTPS Port (Secure Encrypted Traffic)
+      - "${PORT_HTTPS:-443}:443"
+    volumes:
+      # Persistent configuration and operational data
+      - ${NPM_DATA_DIR:-./data}:/data
+      # SSL Certificates storage
+      - ${NPM_LETSENCRYPT_DIR:-./letsencrypt}:/etc/letsencrypt
+    networks:
+      # Main bridge network shared with internal backend services
+      - pwn20wnd-network
+      - default
+
+# ==============================================================================
+# NETWORK DEFINITIONS
+# ==============================================================================
+networks:
+  pwn20wnd-network:
+    external: true

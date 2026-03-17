@@ -1,0 +1,14 @@
+# ==========================================
+# GITHUB IGNORE LIST - SECURITY & PRIVACY
+# ==========================================
+
+# 1. Environment Variables
+.env
+
+# 2. Glance Configuration (Contains API Keys & Tokens)
+# DO NOT commit your actual glance.yml to GitHub!
+config/glance.yml
+
+# 3. Backups and Temporary Files
+*.bak
+*.tmp

@@ -1,0 +1,7 @@
+filenames:
+  - /var/log/npm/proxy-host-*_access.log
+  - /var/log/npm/proxy-host-*_error.log
+  - /var/log/npm/fallback_access.log
+  - /var/log/npm/fallback_error.log
+labels:
+  type: nginx-proxy-manager

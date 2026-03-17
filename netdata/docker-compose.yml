@@ -1,0 +1,72 @@
+# ==============================================================================
+# NETDATA - DOCKER COMPOSE CONFIGURATION
+# ==============================================================================
+# Description:
+#   Real-time performance and health monitoring for systems and applications.
+#   This container is highly privileged as it requires deep access to the host
+#   OS to collect accurate metrics.
+#
+# Directory Architecture & Volume Mapping:
+#   Unlike standard containers, this setup utilizes Docker Named Volumes:
+#   - netdataconfig : Stores Netdata configuration files.
+#   - netdatalib    : Stores the database and historical metric data.
+#   - netdatacache  : Stores temporary cache data.
+#
+# Host Mounts (Read-Only):
+#   /proc, /sys, /etc/passwd, etc., are mounted to allow Netdata to monitor
+#   host CPU, memory, disks, and processes securely without modification rights.
+#
+# Security Notice:
+#   Ensure your .env file is added to .gitignore. Do not expose port 19999
+#   directly to the public internet without a reverse proxy and authentication.
+# ==============================================================================
+
+services:
+  netdata:
+    image: netdata/netdata:latest
+    container_name: netdata
+    # Uses variable from .env, falls back to 'pwn20wndserver' if empty
+    hostname: ${HOSTNAME:-pwn20wndserver}
+    pid: host
+    restart: unless-stopped
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - apparmor:unconfined
+    environment:
+      - TZ=${TZ:-Asia/Kuala_Lumpur}
+      # Optional: Uncomment below to connect this node to Netdata Cloud
+      # - NETDATA_CLAIM_TOKEN=${NETDATA_CLAIM_TOKEN}
+      # - NETDATA_CLAIM_URL=https://app.netdata.cloud
+      # - NETDATA_CLAIM_ROOMS=${NETDATA_CLAIM_ROOMS}
+    volumes:
+      - netdataconfig:/etc/netdata
+      - netdatalib:/var/lib/netdata
+      - netdatacache:/var/cache/netdata
+      # Deep host system mounts for metric collection (Read-Only for security)
+      - /etc/passwd:/host/etc/passwd:ro
+      - /etc/group:/host/etc/group:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro
+    ports:
+      - "${NETDATA_PORT:-19999}:19999"
+    networks:
+      # Attached to the external network for reverse proxy routing
+      - pwn20wnd-network
+
+# ==============================================================================
+# NAMED VOLUMES
+# Managed entirely by Docker Engine.
+# ==============================================================================
+volumes:
+  netdataconfig:
+  netdatalib:
+  netdatacache:
+
+# ==============================================================================
+# NETWORK DEFINITIONS
+# ==============================================================================
+networks:
+  pwn20wnd-network:
+    external: true

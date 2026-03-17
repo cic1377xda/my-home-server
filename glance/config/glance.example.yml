@@ -1,0 +1,22 @@
+# ==============================================================================
+# GLANCE - EXAMPLE CONFIGURATION
+# Rename this to glance.yml and replace dummy values with your actual keys.
+# ==============================================================================
+
+theme: dark
+
+pages:
+  - name: Home
+    columns:
+      - size: small
+        widgets:
+          - type: weather
+            location: "Kuala Lumpur, Malaysia"
+            # INSERT YOUR API KEY BELOW
+            api_key: "your_openweathermap_api_key_here"
+            
+      - size: full
+        widgets:
+          - type: docker
+            # Ensure /var/run/docker.sock is mounted in docker-compose.yml
+            limit: 10

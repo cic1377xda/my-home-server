@@ -1,0 +1,15 @@
+# ==========================================
+# GITHUB IGNORE LIST - SECURITY & PRIVACY
+# ==========================================
+
+# 1. Environment Variables & Secrets
+# CRITICAL: Contains Database and Grafana passwords
+.env
+
+# 2. Custom Backend Code
+# Contains private IoT ingestion scripts and hardcoded configurations
+www/
+
+# 3. Backups and Temporary Files
+*.bak
+*.tmp

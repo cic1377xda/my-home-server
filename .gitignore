@@ -1,0 +1,22 @@
+# ==========================================
+# MASTER GITHUB IGNORE LIST
+# ==========================================
+
+# 1. Global Secrets (Halang semua fail .env dalam mana-mana folder)
+**/.env
+**/*.key
+**/*.pem
+**/*.sql
+**/*.db
+**/*.sqlite
+
+# 2. Personal Projects & Private Folders (TAK AKAN DI-UPLOAD)
+myportfolio/
+fitnessapp/
+powermeter/
+troubleshoot/
+
+# 3. OS & Docker Temp Files
+.DS_Store
+*.bak
+*.tmp

@@ -1,0 +1,88 @@
+# ==============================================================================
+# IMMICH (SELF-HOSTED PHOTO BACKUP) - DOCKER COMPOSE CONFIGURATION
+# ==============================================================================
+# Description:
+#   A high-performance, self-hosted photo and video backup solution. This stack 
+#   includes a Node.js-based backend, a Machine Learning container for facial 
+#   recognition and semantic search, Valkey (Redis alternative) for caching, 
+#   and PostgreSQL equipped with PGVector for high-speed AI vector queries.
+#
+# Directory Architecture & Volume Mapping:
+#   ${UPLOAD_LOCATION} : Primary storage for user media (photos/videos).
+#   ${DB_DATA_LOCATION}: Contains the raw PostgreSQL database files. 
+#                        SECURITY NOTICE: Owned by the container's internal 
+#                        user. Explicitly ignored via .gitignore to prevent 
+#                        massive data and metadata leaks.
+#
+# Hardware Optimization:
+#   Machine learning concurrency and model selection are heavily optimized via 
+#   the .env file to run efficiently on low-resource environments.
+# ==============================================================================
+
+services:
+  immich-server:
+    container_name: immich_server
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
+    command: [ "start.sh", "immich" ]
+    volumes:
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      # Mounts local timezone to synchronize logs
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - .env
+    ports:
+      - "2283:2283"
+    depends_on:
+      - redis
+      - database
+    restart: always
+    networks:
+      - pwn20wnd-network
+      - default
+
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
+    volumes:
+      # Named volume for caching downloaded ML models locally
+      - model-cache:/cache
+    env_file:
+      - .env
+    restart: always
+    networks:
+      - pwn20wnd-network
+      - default
+
+  redis:
+    container_name: immich_redis
+    image: valkey/valkey:8
+    restart: always
+    networks:
+      - pwn20wnd-network
+      - default
+
+  database:
+    container_name: immich_postgres
+    # Customized Postgres image containing essential extensions (pgvector)
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: ${DB_DATABASE_NAME}
+      POSTGRES_INITDB_ARGS: '--data-checksums'
+    volumes:
+      - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - pwn20wnd-network
+      - default
+
+# ==============================================================================
+# NAMED VOLUMES & NETWORKS
+# ==============================================================================
+volumes:
+  model-cache:
+
+networks:
+  pwn20wnd-network:
+    external: true

@@ -1,0 +1,11 @@
+# ==========================================
+# GITHUB IGNORE LIST - SECURITY & PRIVACY
+# ==========================================
+
+# 1. Environment Variables & Secrets
+# CRITICAL: Contains Database Passwords and OnlyOffice JWT Secret
+.env
+
+# 2. Backups and Temporary Files
+*.bak
+*.tmp

@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 15s # Ambil data setiap 15 saat
+
+scrape_configs:
+  - job_name: 'node_exporter'
+    static_configs:
+      - targets: ['node-exporter:9100'] # Ini agent yang baca CPU/RAM tadi

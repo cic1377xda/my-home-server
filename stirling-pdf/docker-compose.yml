@@ -1,0 +1,56 @@
+# ==============================================================================
+# STIRLING-PDF - DOCKER COMPOSE CONFIGURATION
+# ==============================================================================
+# Description:
+#   A robust, locally hosted web application that allows you to perform 
+#   various operations on PDF files (split, merge, convert, etc.) securely 
+#   without sending your data to the cloud.
+#
+# Directory Architecture & Volume Mapping:
+#   ./extraConfigs/ : CRITICAL! Contains application settings, the internal 
+#                     database, backups, and highly sensitive JWT cryptographic 
+#                     keys used for authentication sessions.
+#   ./customFiles/  : Stores custom logos, templates, and static assets.
+#   ./logs/         : Contains application logs, including auth attempts.
+#   ./trainingData/ : Used for OCR (Tesseract) language packs if enabled.
+#
+# Security Notice:
+#   Because ./extraConfigs/ contains your JWT keys and database, it MUST BE 
+#   explicitly ignored in your .gitignore file. Never push this directory 
+#   or your .env file to a public GitHub repository.
+# ==============================================================================
+
+services:
+  stirling-pdf:
+    image: stirlingtools/stirling-pdf:latest
+    container_name: stirling-pdf
+    restart: unless-stopped
+    ports:
+      # Host Port : Container Port
+      - "${STIRLING_PDF_PORT:-8087}:8080"
+    volumes:
+      # Uncomment the line below if you download Tesseract OCR language packs
+      # - ./trainingData:/usr/share/tessdata
+      - ./extraConfigs:/configs
+      - ./customFiles:/customFiles
+      - ./logs:/logs
+    env_file:
+      # Loads system toggles and variables securely
+      - .env
+    environment:
+      - TZ=${TZ:-Asia/Kuala_Lumpur}
+      - DOCKER_ENABLE_SECURITY=${DOCKER_ENABLE_SECURITY:-false}
+      - INSTALL_BOOK_AND_ADVANCED_HTML_OPS=${INSTALL_BOOK_AND_ADVANCED_HTML_OPS:-false}
+      - LANGS=${LANGS:-eng}
+      - SYSTEM_DEFAULTLOCALE=${SYSTEM_DEFAULTLOCALE:-en_US}
+    networks:
+      # Attached to the external network for reverse proxy routing
+      - pwn20wnd-network
+      - default
+
+# ==============================================================================
+# NETWORK DEFINITIONS
+# ==============================================================================
+networks:
+  pwn20wnd-network:
+    external: true

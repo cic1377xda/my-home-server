@@ -1,0 +1,44 @@
+# ==============================================================================
+# GLANCE DASHBOARD - DOCKER COMPOSE CONFIGURATION
+# ==============================================================================
+# Description:
+#   A self-hosted dashboard that puts all your feeds, widgets, and homelab 
+#   statistics in one place.
+#
+# Directory Architecture & Volume Mapping:
+#   ./config/ : Contains the primary configuration file (glance.yml).
+#               SECURITY WARNING: This file typically stores third-party API 
+#               keys (Weather, YouTube, etc.). It is explicitly ignored via 
+#               .gitignore to prevent credential leaks. Use glance.example.yml 
+#               as a public template.
+#
+#   /var/run/docker.sock : Mounted as Read-Only (:ro) to allow the dashboard 
+#               to monitor the status of other Docker containers safely without 
+#               granting execution privileges.
+# ==============================================================================
+
+services:
+  glance:
+    container_name: glance
+    image: glanceapp/glance:latest
+    restart: unless-stopped
+    volumes:
+      # Maps local configuration folder to the container
+      - ./config:/app/config
+      # Grants read-only access to the Docker daemon for container monitoring
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      # Host Port : Container Port
+      # Uses variable from .env if available, defaults to 8088
+      - "${GLANCE_PORT:-8088}:8080"
+    networks:
+      # Attached to the external network for reverse proxy routing
+      - pwn20wnd-network
+      - default
+
+# ==============================================================================
+# NETWORK DEFINITIONS
+# ==============================================================================
+networks:
+  pwn20wnd-network:
+    external: true

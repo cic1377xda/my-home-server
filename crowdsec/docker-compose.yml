@@ -1,0 +1,51 @@
+# ==============================================================================
+# CROWDSEC (HYBRID DEPLOYMENT) - DOCKER COMPOSE CONFIGURATION
+# ==============================================================================
+# Description:
+#   A collaborative IPS (Intrusion Prevention System). This container acts as 
+#   the "Agent/Brain", parsing logs from the Reverse Proxy to detect attacks.
+#
+# Hybrid Architecture Context:
+#   This specific setup is "Hybrid". The Agent runs inside Docker, while the 
+#   Enforcer (Firewall Bouncer) runs natively on the Host OS via systemd. 
+#   The Bouncer connects to this Agent via the mapped LAPI port (8082).
+#
+# Security & Path Management:
+#   - ${NPM_LOGS_DIR} : Mapped as Read-Only (:ro) so CrowdSec can analyze traffic 
+#                       logs without risking tampering.
+#   - no-new-privileges : Security option enabled to prevent privilege escalation.
+# ==============================================================================
+
+services:
+  crowdsec:
+    image: crowdsecurity/crowdsec:latest
+    container_name: crowdsec
+    environment:
+      # Pass group ID to avoid permission issues when reading external logs
+      GID: "${GID:-1000}"
+      TZ: "${TZ:-Asia/Kuala_Lumpur}"
+      # Pre-load specific log parsers and scenarios (bouncers)
+      COLLECTIONS: "crowdsecurity/nginx-proxy-manager"
+    volumes:
+      - ./config:/etc/crowdsec/
+      - ./data:/var/lib/crowdsec/data/
+      # CRITICAL: Path to your reverse proxy logs (Read-Only)
+      - ${NPM_LOGS_DIR:-/var/log/npm}:/var/log/npm:ro
+    restart: unless-stopped
+    security_opt:
+      # Hardening: Prevent container processes from gaining new privileges
+      - no-new-privileges:true
+    ports:
+      # Host Port (LAPI) : Container Port
+      - "${CROWDSEC_LAPI_PORT:-8082}:8080"
+    networks:
+      # Connected to the proxy network if it needs to communicate internally
+      - pwn20wnd-network
+      - default
+
+# ==============================================================================
+# NETWORK DEFINITIONS
+# ==============================================================================
+networks:
+  pwn20wnd-network:
+    external: true

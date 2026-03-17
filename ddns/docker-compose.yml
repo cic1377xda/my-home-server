@@ -1,0 +1,53 @@
+# ==============================================================================
+# CLOUDFLARE DDNS (DYNAMIC DNS) - DOCKER COMPOSE CONFIGURATION
+# ==============================================================================
+# Description:
+#   A dual-container Dynamic DNS updater for Cloudflare. This stack continuously 
+#   monitors the server's public IP address and updates the DNS A-records 
+#   in Cloudflare automatically if the IP changes (ideal for home ISPs).
+#
+# Container Architecture:
+#   - cloudflare-ddns     : Updates the primary 'dns' subdomain.
+#                           PROXIED=true (Orange Cloud) for web traffic routing.
+#   - cloudflare-ddns-dot : Updates the 'dot' (DNS-over-TLS) subdomain.
+#                           PROXIED=false (Grey Cloud) is MANDATORY to allow 
+#                           direct raw connection from Android Private DNS.
+#
+# Security Notice:
+#   Cloudflare API keys possess high privileges over your domain routing.
+#   These keys MUST be stored securely in the .env file. Ensure your .gitignore 
+#   is properly configured to exclude the .env file before committing.
+# ==============================================================================
+
+services:
+  # 1. Primary DNS Updater (Proxied / Orange Cloud)
+  cloudflare-ddns:
+    image: oznu/cloudflare-ddns:latest
+    container_name: cloudflare-ddns
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - TZ=${TZ:-Asia/Kuala_Lumpur}
+      - API_KEY=${CF_API_KEY}
+      - ZONE=${CF_ZONE}
+      - SUBDOMAIN=${CF_SUBDOMAIN_1}
+      # Proxied=true routes traffic through Cloudflare's WAF/CDN
+      - PROXIED=true
+      - RRTYPE=A
+
+  # 2. DNS-over-TLS Updater (DNS Only / Grey Cloud)
+  cloudflare-ddns-dot:
+    image: oznu/cloudflare-ddns:latest
+    container_name: cloudflare-ddns-dot
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - TZ=${TZ:-Asia/Kuala_Lumpur}
+      - API_KEY=${CF_API_KEY}
+      - ZONE=${CF_ZONE}
+      - SUBDOMAIN=${CF_SUBDOMAIN_2}
+      # Proxied=false is REQUIRED for raw Android Private DNS (DoT) access
+      - PROXIED=false
+      - RRTYPE=A

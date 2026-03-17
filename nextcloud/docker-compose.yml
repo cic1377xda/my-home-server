@@ -1,0 +1,125 @@
+# ==============================================================================
+# ENTERPRISE NEXTCLOUD & ONLYOFFICE COLLABORATION STACK
+# ==============================================================================
+# Description:
+#   A highly optimized, self-hosted cloud storage and collaboration suite.
+#   This stack integrates Nextcloud (Core), MariaDB (Database), Redis 
+#   (In-memory caching/locking), a dedicated Cron container for background 
+#   jobs, and OnlyOffice Document Server for real-time document editing.
+#
+# Directory Architecture & Volume Mapping:
+#   All persistent data is rooted at ${NEXTCLOUD_ROOT_DIR} to ensure 
+#   safety during container rebuilds. (Ignored in version control).
+#     ├── /database   : MariaDB raw database files.
+#     ├── /html       : Nextcloud core files, apps, and themes.
+#     ├── /data       : Nextcloud user files and storage.
+#     └── /onlyoffice : OnlyOffice configuration and log files.
+#
+# Security Notice:
+#   Passwords, JWT tokens, and domains are injected dynamically via the .env file. 
+#   Ensure .env is explicitly excluded in .gitignore before committing to Git.
+# ==============================================================================
+
+services:
+  # 1. DATABASE
+  db:
+    image: mariadb:10.11
+    container_name: nextcloud-db
+    # Optimized transaction and binary logging settings for Nextcloud
+    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
+    restart: always
+    volumes:
+      - ${NEXTCLOUD_ROOT_DIR:-./stack}/database:/var/lib/mysql
+    env_file:
+      - .env
+    environment:
+      - TZ=${TZ:-Asia/Kuala_Lumpur}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+    networks:
+      - pwn20wnd-network
+      - default
+
+  # 2. IN-MEMORY CACHE & LOCKING
+  redis:
+    image: redis:alpine
+    container_name: nextcloud-redis
+    restart: always
+    networks:
+      - pwn20wnd-network
+      - default
+
+  # 3. NEXTCLOUD CORE APP
+  app:
+    image: nextcloud:latest
+    container_name: nextcloud-app
+    restart: always
+    ports:
+      - "${NEXTCLOUD_PORT:-8080}:80"
+    volumes:
+      - ${NEXTCLOUD_ROOT_DIR:-./stack}/html:/var/www/html
+      - ${NEXTCLOUD_ROOT_DIR:-./stack}/data:/var/www/html/data
+    env_file:
+      - .env
+    environment:
+      - TZ=${TZ:-Asia/Kuala_Lumpur}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_HOST=db
+      - REDIS_HOST=redis
+      # Critical for Reverse Proxy (Cloudflare) setups
+      - OVERWRITEHOST=${NEXTCLOUD_DOMAIN}
+      - OVERWRITEPROTOCOL=https
+    depends_on:
+      - db
+      - redis
+    networks:
+      - pwn20wnd-network
+      - default
+
+  # 4. BACKGROUND JOBS (CRON)
+  cron:
+    image: nextcloud:latest
+    container_name: nextcloud-cron
+    restart: always
+    volumes:
+      # Must mount exactly the same volumes as the 'app' container
+      - ${NEXTCLOUD_ROOT_DIR:-./stack}/html:/var/www/html
+      - ${NEXTCLOUD_ROOT_DIR:-./stack}/data:/var/www/html/data
+    entrypoint: /cron.sh
+    depends_on:
+      - db
+      - redis
+    networks:
+      - pwn20wnd-network
+      - default
+
+  # 5. ONLYOFFICE DOCUMENT SERVER
+  onlyoffice:
+    image: onlyoffice/documentserver:latest
+    container_name: onlyoffice
+    restart: always
+    ports:
+      - "${ONLYOFFICE_PORT:-8084}:80"
+    env_file:
+      - .env
+    environment:
+      - TZ=${TZ:-Asia/Kuala_Lumpur}
+      - JWT_ENABLED=true
+      - JWT_SECRET=${ONLYOFFICE_JWT_SECRET}
+    volumes:
+      - ${NEXTCLOUD_ROOT_DIR:-./stack}/onlyoffice/data:/var/www/onlyoffice/Data
+      - ${NEXTCLOUD_ROOT_DIR:-./stack}/onlyoffice/logs:/var/log/onlyoffice
+    networks:
+      - pwn20wnd-network
+      - default
+
+# ==============================================================================
+# NETWORK DEFINITIONS
+# ==============================================================================
+networks:
+  pwn20wnd-network:
+    external: true

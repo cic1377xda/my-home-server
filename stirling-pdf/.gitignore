@@ -1,0 +1,22 @@
+# ==========================================
+# GITHUB IGNORE LIST - SECURITY & PRIVACY
+# ==========================================
+
+# 1. Environment Variables
+.env
+
+# 2. Stirling-PDF Sensitive Data
+# CRITICAL: Contains JWT cryptographic keys, databases, and configuration files!
+extraConfigs/
+
+# 3. Application Logs
+# Contains IP addresses and invalid authentication attempts
+logs/
+
+# 4. Optional: Custom UI & Heavy OCR Data
+customFiles/
+trainingData/
+
+# 5. Backups and Temporary Files
+*.bak
+*.tmp

@@ -1,0 +1,18 @@
+# ==========================================
+# GITHUB IGNORE LIST - SECURITY & PRIVACY
+# ==========================================
+
+# 1. Environment Variables
+.env
+
+# 2. Application Configurations & Databases
+# Contains sensitive API Keys, watch history, and private configs
+config/
+
+# 3. Media Storage
+# Contains downloaded torrents and media files
+data/
+
+# 4. Backups and Temporary Files
+*.bak
+*.tmp

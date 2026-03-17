@@ -1,0 +1,10 @@
+# ==========================================
+# GITHUB IGNORE LIST - SECURITY & PRIVACY
+# ==========================================
+
+# 1. Environment Variables
+.env
+
+# 2. Backups and Temporary Files
+*.bak
+*.tmp

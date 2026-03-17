@@ -1,0 +1,57 @@
+# ==============================================================================
+# n8n WORKFLOW AUTOMATION - DOCKER COMPOSE CONFIGURATION
+# ==============================================================================
+# Description:
+#   A powerful, self-hosted node-based workflow automation tool (Zapier alternative).
+#   Used to interconnect various APIs, databases, and services seamlessly.
+#
+# Directory Architecture & Volume Mapping:
+#   ${N8N_DATA_DIR} : Mapped to /home/node/.n8n inside the container. 
+#                     Stores internal SQLite database, user credentials, and 
+#                     workflow execution history. (Ignored in version control).
+#
+# Security & Webhook Notice:
+#   Basic Authentication is strictly enforced via variables injected from the 
+#   .env file. The WEBHOOK_URL must be correctly defined to ensure external 
+#   services (e.g., GitHub, Telegram, IoT devices) can successfully trigger 
+#   workflows on this instance.
+# ==============================================================================
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n-automation
+    restart: always
+    ports:
+      # Host Port : Container Port
+      - "${N8N_PORT:-5678}:5678"
+    env_file:
+      - .env
+    environment:
+      # --- Security ---
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
+      
+      # --- System & Timezone ---
+      - TZ=${TZ:-Asia/Kuala_Lumpur}
+      - GENERIC_TIMEZONE=${TZ:-Asia/Kuala_Lumpur}
+      
+      # --- Network ---
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - WEBHOOK_URL=${N8N_WEBHOOK_URL}
+    volumes:
+      # Persistent storage mapping
+      - ${N8N_DATA_DIR}:/home/node/.n8n
+    networks:
+      # Attached to the external network for reverse proxy routing
+      - pwn20wnd-network
+      - default
+
+# ==============================================================================
+# NETWORK DEFINITIONS
+# ==============================================================================
+networks:
+  pwn20wnd-network:
+    external: true

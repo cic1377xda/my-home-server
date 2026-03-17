@@ -1,0 +1,15 @@
+# ==========================================
+# GITHUB IGNORE LIST - SECURITY & PRIVACY
+# ==========================================
+
+# 1. Environment Variables
+# CRITICAL: Contains Database Passwords
+.env
+
+# 2. Database Storage
+# Do NOT upload this! Contains thousands of private database files and metadata.
+postgres/
+
+# 3. Backups and Temporary Files
+*.bak
+*.tmp
